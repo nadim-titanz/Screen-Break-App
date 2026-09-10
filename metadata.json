@@ -1,0 +1,6 @@
+{
+  "name": "Interrupt",
+  "description": "Continuous screen time reminder that gives pop-up alerts at customizable intervals with strict dopamine detox lockout and customizable ignored apps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
