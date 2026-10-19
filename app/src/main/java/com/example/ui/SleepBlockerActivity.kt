@@ -209,10 +209,10 @@ fun SleepBlockerScreen(
                         )
                     }
 
-                    // Action Buttons
+                    // Action Button: Strict Close
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
                             onClick = onClose,
@@ -227,29 +227,9 @@ fun SleepBlockerScreen(
                                 .testTag("close_blocker_button")
                         ) {
                             Text(
-                                text = "Close",
+                                text = "Close & Exit App",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.SemiBold
-                                )
-                            )
-                        }
-
-                        OutlinedButton(
-                            onClick = onEmergencyUse,
-                            shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, BrickOutline),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = BrickTextSecondary
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(44.dp)
-                                .testTag("emergency_use_button")
-                        ) {
-                            Text(
-                                text = "5-Minute Break",
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = FontWeight.Medium
                                 )
                             )
                         }

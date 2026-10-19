@@ -37,26 +37,34 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.model.ReminderSettings
 import com.example.service.CurrentAppDetector
+import com.example.util.ReelsTrackingManager
 import com.example.ui.ScreenBreakViewModel
-import com.example.ui.theme.SophisticatedCardContainer
-import com.example.ui.theme.SophisticatedOnPrimary
-import com.example.ui.theme.SophisticatedOutline
-import com.example.ui.theme.SophisticatedPrimary
-import com.example.ui.theme.SophisticatedSurface
-import com.example.ui.theme.SophisticatedSurfaceVariant
-import com.example.ui.theme.SophisticatedTextPrimary
-import com.example.ui.theme.SophisticatedTextSecondary
+import com.example.ui.theme.NothingBlack
+import com.example.ui.theme.NothingOutline
+import com.example.ui.theme.NothingOutlineVariant
+import com.example.ui.theme.NothingRed
+import com.example.ui.theme.NothingSurface
+import com.example.ui.theme.NothingSurfaceElevated
+import com.example.ui.theme.NothingTextDisabled
+import com.example.ui.theme.NothingTextPrimary
+import com.example.ui.theme.NothingTextSecondary
+import com.example.ui.theme.NothingWhite
 
 @Composable
 fun SettingsDialog(
@@ -66,13 +74,15 @@ fun SettingsDialog(
 ) {
     val context = LocalContext.current
     val intervalOptions = listOf(1, 2, 5, 10, 15, 20, 30)
+    val usageState by viewModel.usageState.collectAsStateWithLifecycle()
+    var showTurnOffConfirmDialog by rememberSaveable { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = SophisticatedSurface,
-            border = BorderStroke(1.dp, SophisticatedOutline),
-            tonalElevation = 6.dp,
+            shape = RoundedCornerShape(16.dp),
+            color = NothingSurface,
+            border = BorderStroke(1.dp, NothingOutline),
+            tonalElevation = 0.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
             val scrollState = rememberScrollState()
@@ -80,7 +90,7 @@ fun SettingsDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
-                    .padding(22.dp),
+                    .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Header
@@ -89,47 +99,98 @@ fun SettingsDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Reminder Settings",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Medium,
-                            letterSpacing = (-0.5).sp
-                        ),
-                        color = SophisticatedTextPrimary
-                    )
+                    Column {
+                        Text(
+                            text = "// CONFIGURATION",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                                letterSpacing = 1.2.sp
+                            ),
+                            color = NothingRed
+                        )
+                        Text(
+                            text = "SYSTEM SETTINGS",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = NothingWhite
+                        )
+                    }
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = SophisticatedTextSecondary
+                            tint = NothingTextSecondary
                         )
                     }
                 }
 
-                HorizontalDivider(color = SophisticatedOutline)
+                HorizontalDivider(color = NothingOutline)
 
                 // Interval Section
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Timer,
-                            contentDescription = null,
-                            tint = SophisticatedPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Continuous Usage Interval",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = SophisticatedTextPrimary
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Timer,
+                                contentDescription = null,
+                                tint = NothingRed,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = "CONTINUOUS USAGE INTERVAL",
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 12.sp
+                                    ),
+                                    color = NothingWhite
+                                )
+                                Text(
+                                    text = if (usageState.isServiceRunning) "Active • ${usageState.intervalMinutes}m interval" else "Monitoring paused",
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        fontSize = 11.sp
+                                    ),
+                                    color = NothingTextSecondary
+                                )
+                            }
+                        }
+
+                        Switch(
+                            checked = usageState.isServiceRunning,
+                            onCheckedChange = { checked ->
+                                if (!checked) {
+                                    showTurnOffConfirmDialog = true
+                                } else {
+                                    viewModel.startService()
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = NothingWhite,
+                                checkedTrackColor = NothingRed,
+                                uncheckedThumbColor = NothingTextSecondary,
+                                uncheckedTrackColor = NothingOutline
+                            ),
+                            modifier = Modifier.testTag("settings_interval_toggle_switch")
                         )
                     }
                     Text(
-                        text = "Continuous screen time threshold before triggering pop-up (1 min to 30 min):",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SophisticatedTextSecondary
+                        text = "Continuous screen time threshold before triggering pop-up:",
+                        style = androidx.compose.ui.text.TextStyle(fontSize = 12.sp),
+                        color = NothingTextSecondary
                     )
 
                     @OptIn(ExperimentalLayoutApi::class)
@@ -139,21 +200,32 @@ fun SettingsDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         intervalOptions.forEach { minutes ->
+                            val isSelected = settings.intervalMinutes == minutes
                             FilterChip(
-                                selected = settings.intervalMinutes == minutes,
+                                selected = isSelected,
                                 onClick = { viewModel.updateInterval(minutes) },
-                                label = { Text("${minutes}m") },
+                                label = {
+                                    Text(
+                                        "${minutes}m",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            fontSize = 12.sp
+                                        )
+                                    )
+                                },
+                                shape = RoundedCornerShape(999.dp),
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = SophisticatedCardContainer,
-                                    selectedLabelColor = SophisticatedPrimary,
-                                    containerColor = SophisticatedSurfaceVariant,
-                                    labelColor = SophisticatedTextSecondary
+                                    selectedContainerColor = NothingRed,
+                                    selectedLabelColor = NothingWhite,
+                                    containerColor = NothingSurfaceElevated,
+                                    labelColor = NothingTextSecondary
                                 ),
                                 border = FilterChipDefaults.filterChipBorder(
-                                    borderColor = SophisticatedOutline,
-                                    selectedBorderColor = SophisticatedPrimary,
+                                    borderColor = NothingOutline,
+                                    selectedBorderColor = NothingRed,
                                     enabled = true,
-                                    selected = settings.intervalMinutes == minutes
+                                    selected = isSelected
                                 ),
                                 modifier = Modifier.testTag("interval_chip_${minutes}m")
                             )
@@ -161,7 +233,7 @@ fun SettingsDialog(
                     }
                 }
 
-                HorizontalDivider(color = SophisticatedOutline)
+                HorizontalDivider(color = NothingOutline)
 
                 // Floating Overlay Pop-up Toggle
                 Row(
@@ -177,19 +249,23 @@ fun SettingsDialog(
                         Icon(
                             imageVector = Icons.Default.Visibility,
                             contentDescription = null,
-                            tint = SophisticatedPrimary,
+                            tint = NothingWhite,
                             modifier = Modifier.size(20.dp)
                         )
                         Column {
                             Text(
-                                text = "Floating Pop-up Window",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = SophisticatedTextPrimary
+                                text = "FLOATING POP-UP WINDOW",
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp
+                                ),
+                                color = NothingWhite
                             )
                             Text(
-                                text = "Display overlay pop-up across active apps",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = SophisticatedTextSecondary
+                                text = "Display overlay across active apps",
+                                style = androidx.compose.ui.text.TextStyle(fontSize = 11.sp),
+                                color = NothingTextSecondary
                             )
                         }
                     }
@@ -197,10 +273,10 @@ fun SettingsDialog(
                         checked = settings.overlayEnabled,
                         onCheckedChange = { viewModel.updateOverlay(it) },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = SophisticatedOnPrimary,
-                            checkedTrackColor = SophisticatedPrimary,
-                            uncheckedThumbColor = SophisticatedTextSecondary,
-                            uncheckedTrackColor = SophisticatedOutline
+                            checkedThumbColor = NothingWhite,
+                            checkedTrackColor = NothingRed,
+                            uncheckedThumbColor = NothingTextSecondary,
+                            uncheckedTrackColor = NothingOutline
                         ),
                         modifier = Modifier.testTag("overlay_toggle_switch")
                     )
@@ -220,19 +296,23 @@ fun SettingsDialog(
                         Icon(
                             imageVector = Icons.Default.Vibration,
                             contentDescription = null,
-                            tint = SophisticatedPrimary,
+                            tint = NothingWhite,
                             modifier = Modifier.size(20.dp)
                         )
                         Column {
                             Text(
-                                text = "Vibration",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = SophisticatedTextPrimary
+                                text = "HAPTIC VIBRATION",
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp
+                                ),
+                                color = NothingWhite
                             )
                             Text(
-                                text = "Vibrate on break pop-up",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = SophisticatedTextSecondary
+                                text = "Mechanical haptic pulse on pop-up",
+                                style = androidx.compose.ui.text.TextStyle(fontSize = 11.sp),
+                                color = NothingTextSecondary
                             )
                         }
                     }
@@ -240,29 +320,114 @@ fun SettingsDialog(
                         checked = settings.vibrationEnabled,
                         onCheckedChange = { viewModel.updateVibration(it) },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = SophisticatedOnPrimary,
-                            checkedTrackColor = SophisticatedPrimary,
-                            uncheckedThumbColor = SophisticatedTextSecondary,
-                            uncheckedTrackColor = SophisticatedOutline
+                            checkedThumbColor = NothingWhite,
+                            checkedTrackColor = NothingRed,
+                            uncheckedThumbColor = NothingTextSecondary,
+                            uncheckedTrackColor = NothingOutline
                         ),
                         modifier = Modifier.testTag("vibration_toggle_switch")
                     )
                 }
 
-                HorizontalDivider(color = SophisticatedOutline)
+                HorizontalDivider(color = NothingOutline)
+
+                // Block Reels & Shorts Toggle
+                var isBlockReelsOn by rememberSaveable { mutableStateOf(ReelsTrackingManager.isReelsBlockingEnabled(context)) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "BLOCK REELS & SHORTS",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp
+                            ),
+                            color = NothingWhite
+                        )
+                        Text(
+                            text = "Auto-intercepts Instagram Reels & YT Shorts",
+                            style = androidx.compose.ui.text.TextStyle(fontSize = 11.sp),
+                            color = NothingTextSecondary
+                        )
+                    }
+                    Switch(
+                        checked = isBlockReelsOn,
+                        onCheckedChange = { checked ->
+                            isBlockReelsOn = checked
+                            ReelsTrackingManager.setReelsBlockingEnabled(context, checked)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = NothingWhite,
+                            checkedTrackColor = NothingRed,
+                            uncheckedThumbColor = NothingTextSecondary,
+                            uncheckedTrackColor = NothingOutline
+                        ),
+                        modifier = Modifier.testTag("settings_block_reels_switch")
+                    )
+                }
+
+                // Center Time HUD Toggle
+                var isCenterHudOn by rememberSaveable { mutableStateOf(ReelsTrackingManager.isCenterTimerOverlayEnabled(context)) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "TIME ELAPSED ON SCREEN CENTER",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp
+                            ),
+                            color = NothingWhite
+                        )
+                        Text(
+                            text = "Shows live usage timer centered on screen",
+                            style = androidx.compose.ui.text.TextStyle(fontSize = 11.sp),
+                            color = NothingTextSecondary
+                        )
+                    }
+                    Switch(
+                        checked = isCenterHudOn,
+                        onCheckedChange = { checked ->
+                            isCenterHudOn = checked
+                            ReelsTrackingManager.setCenterTimerOverlayEnabled(context, checked)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = NothingWhite,
+                            checkedTrackColor = NothingRed,
+                            uncheckedThumbColor = NothingTextSecondary,
+                            uncheckedTrackColor = NothingOutline
+                        ),
+                        modifier = Modifier.testTag("settings_center_hud_switch")
+                    )
+                }
+
+                HorizontalDivider(color = NothingOutline)
 
                 // System Permissions Links
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "System Settings",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = SophisticatedTextPrimary
+                        text = "// SYSTEM PREFERENCES",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp
+                        ),
+                        color = NothingTextSecondary
                     )
 
                     Card(
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = SophisticatedSurfaceVariant),
-                        border = BorderStroke(1.dp, SophisticatedOutline),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = NothingSurfaceElevated),
+                        border = BorderStroke(1.dp, NothingOutline),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
@@ -278,22 +443,25 @@ fun SettingsDialog(
                         ) {
                             Text(
                                 text = "Usage Access Settings",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = SophisticatedTextPrimary
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontSize = 13.sp
+                                ),
+                                color = NothingWhite
                             )
                             Icon(
                                 imageVector = Icons.Default.OpenInNew,
                                 contentDescription = null,
-                                tint = SophisticatedTextSecondary,
+                                tint = NothingTextSecondary,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                     }
 
                     Card(
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = SophisticatedSurfaceVariant),
-                        border = BorderStroke(1.dp, SophisticatedOutline),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = NothingSurfaceElevated),
+                        border = BorderStroke(1.dp, NothingOutline),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
@@ -308,36 +476,33 @@ fun SettingsDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Display Over Other Apps Settings",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = SophisticatedTextPrimary
+                                text = "Overlay Display Settings",
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontSize = 13.sp
+                                ),
+                                color = NothingWhite
                             )
                             Icon(
                                 imageVector = Icons.Default.OpenInNew,
                                 contentDescription = null,
-                                tint = SophisticatedTextSecondary,
+                                tint = NothingTextSecondary,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "Developed and designed by Nadim",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 0.2.sp
-                    ),
-                    color = SophisticatedTextSecondary.copy(alpha = 0.75f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("developed_by_text")
-                )
             }
         }
+    }
+
+    if (showTurnOffConfirmDialog) {
+        TurnOffIntervalConfirmDialog(
+            onDismiss = { showTurnOffConfirmDialog = false },
+            onConfirm = {
+                showTurnOffConfirmDialog = false
+                viewModel.stopService()
+            }
+        )
     }
 }

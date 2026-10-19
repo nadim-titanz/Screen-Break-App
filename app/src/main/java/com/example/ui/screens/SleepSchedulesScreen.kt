@@ -1,16 +1,12 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,26 +21,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -56,606 +38,368 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.SleepScheduleEntity
 import com.example.ui.ScreenBreakViewModel
-import com.example.ui.theme.AppleSystemGreen
-import com.example.ui.theme.SophisticatedBg
-import com.example.ui.theme.SophisticatedCardContainer
-import com.example.ui.theme.SophisticatedOutline
-import com.example.ui.theme.SophisticatedOutlineVariant
-import com.example.ui.theme.SophisticatedPrimary
-import com.example.ui.theme.SophisticatedSurface
-import com.example.ui.theme.SophisticatedSurfaceVariant
-import com.example.ui.theme.SophisticatedTextMuted
-import com.example.ui.theme.SophisticatedTextPrimary
-import com.example.ui.theme.SophisticatedTextSecondary
+import com.example.ui.theme.NothingBlack
+import com.example.ui.theme.NothingOutline
+import com.example.ui.theme.NothingRed
+import com.example.ui.theme.NothingSurface
+import com.example.ui.theme.NothingTextMuted
+import com.example.ui.theme.NothingTextSecondary
+import com.example.ui.theme.NothingWhite
+import java.util.Calendar
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SleepSchedulesScreen(
     viewModel: ScreenBreakViewModel,
     modifier: Modifier = Modifier
 ) {
     val schedules by viewModel.sleepSchedules.collectAsStateWithLifecycle()
-    val usageState by viewModel.usageState.collectAsStateWithLifecycle()
     val installedApps by viewModel.installedApps.collectAsStateWithLifecycle()
-
-    var showEditorDialog by remember { mutableStateOf(false) }
     var editingSchedule by remember { mutableStateOf<SleepScheduleEntity?>(null) }
-    var scheduleToDelete by remember { mutableStateOf<SleepScheduleEntity?>(null) }
+    var isCreatingNew by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag("sleep_schedules_screen"),
-        containerColor = SophisticatedBg,
+        containerColor = NothingBlack,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    editingSchedule = null
-                    showEditorDialog = true
-                },
-                icon = { Icon(Icons.Default.Add, contentDescription = "Add Schedule") },
-                text = { Text("Add Schedule", fontWeight = FontWeight.Bold) },
-                containerColor = SophisticatedPrimary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.testTag("add_new_schedule_fab")
-            )
-        }
-    ) { innerPadding ->
-        LazyColumn(
+            FloatingActionButton(
+                onClick = { isCreatingNew = true },
+                containerColor = NothingRed,
+                contentColor = NothingWhite,
+                shape = CircleShape,
+                modifier = Modifier.testTag("add_schedule_fab")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Create Schedule"
+                )
+            }
+        },
+        modifier = modifier.fillMaxSize()
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp)
         ) {
-            // Screen Header
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(SophisticatedPrimary.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Bedtime,
-                                contentDescription = null,
-                                tint = SophisticatedPrimary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Text(
-                            text = "Sleep App Blocker",
-                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                            color = SophisticatedTextPrimary
-                        )
-                    }
-                    Text(
-                        text = "Enforce merciless app blocking to fix sleep hygiene. Only 5-minute emergency use allowed.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SophisticatedTextSecondary
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Real-time Active Schedule Banner
-            item {
-                ActiveStatusBanner(
-                    isActive = usageState.isSleepScheduleActive,
-                    activeTitle = usageState.activeSleepScheduleTitle,
-                    emergencySeconds = usageState.emergencySnoozeSecondsRemaining
-                )
-            }
-
-            // Strict Rules Card
-            item {
-                Card(
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = SophisticatedSurfaceVariant.copy(alpha = 0.6f)),
-                    border = BorderStroke(1.dp, SophisticatedOutline.copy(alpha = 0.5f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = null,
-                                tint = SophisticatedPrimary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = "Schedule Rules",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = SophisticatedTextPrimary
-                            )
-                        }
-
-                        Text(
-                            text = "• App Restriction: Selected apps close immediately when opened during active hours.\n• 5-Min Emergency Pass: Request up to 5 minutes of temporary access if needed.\n• Multiple Schedules: Create separate profiles for sleep, work, or focus hours.",
-                            style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
-                            color = SophisticatedTextSecondary
-                        )
-                    }
-                }
-            }
-
-            // Schedules Section Header
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Configured Schedules (${schedules.size})",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = SophisticatedTextPrimary
-                    )
-                }
-            }
-
-            // Empty state
-            if (schedules.isEmpty()) {
-                item {
-                    Card(
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = SophisticatedSurface),
-                        border = BorderStroke(1.dp, SophisticatedOutline),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Bedtime,
-                                contentDescription = null,
-                                tint = SophisticatedTextMuted,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text(
-                                text = "No Sleep Schedules",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = SophisticatedTextPrimary
-                            )
-                            Text(
-                                text = "Add your first schedule to start blocking sleep-disrupting apps at night.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = SophisticatedTextMuted,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            Button(
-                                onClick = {
-                                    editingSchedule = null
-                                    showEditorDialog = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = SophisticatedPrimary),
-                                modifier = Modifier.padding(top = 8.dp)
-                            ) {
-                                Text("Create Schedule", fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-            } else {
-                items(schedules, key = { it.id }) { schedule ->
-                    ScheduleItemCard(
-                        schedule = schedule,
-                        onToggle = { isEnabled ->
-                            viewModel.setScheduleEnabled(schedule.id, isEnabled)
-                        },
-                        onEdit = {
-                            editingSchedule = schedule
-                            showEditorDialog = true
-                        },
-                        onDelete = {
-                            scheduleToDelete = schedule
-                        }
-                    )
-                }
-            }
-
-            // Bottom spacer for FAB
-            item {
-                Spacer(modifier = Modifier.height(72.dp))
-            }
-        }
-    }
-
-    // Schedule Editor Dialog
-    if (showEditorDialog) {
-        ScheduleEditorDialog(
-            initialSchedule = editingSchedule,
-            installedApps = installedApps,
-            onDismiss = { showEditorDialog = false },
-            onSave = { updatedSchedule ->
-                if (editingSchedule == null) {
-                    viewModel.saveSchedule(updatedSchedule)
-                } else {
-                    viewModel.updateSchedule(updatedSchedule)
-                }
-                showEditorDialog = false
-            }
-        )
-    }
-
-    // Delete Confirmation Dialog
-    if (scheduleToDelete != null) {
-        val target = scheduleToDelete!!
-        AlertDialog(
-            onDismissRequest = { scheduleToDelete = null },
-            title = {
-                Text(
-                    text = "Delete Schedule?",
-                    color = SophisticatedTextPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "Are you sure you want to delete \"${target.title}\"? Apps will no longer be blocked during this time.",
-                    color = SophisticatedTextSecondary
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.deleteSchedule(target.id)
-                        scheduleToDelete = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { scheduleToDelete = null }) {
-                    Text("Cancel", color = SophisticatedTextSecondary)
-                }
-            },
-            containerColor = SophisticatedSurface
-        )
-    }
-}
-
-@Composable
-fun ActiveStatusBanner(
-    isActive: Boolean,
-    activeTitle: String,
-    emergencySeconds: Int
-) {
-    if (isActive) {
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = SophisticatedCardContainer),
-            border = BorderStroke(1.5.dp, SophisticatedPrimary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("active_sleep_banner")
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                SophisticatedPrimary.copy(alpha = 0.15f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-                    .padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Bedtime,
-                            contentDescription = null,
-                            tint = SophisticatedPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "SCHEDULE ACTIVE",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                letterSpacing = 1.sp
-                            ),
-                            color = SophisticatedPrimary
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(SophisticatedPrimary.copy(alpha = 0.2f))
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = "Enforcing",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = SophisticatedPrimary
-                        )
-                    }
-                }
-
-                Text(
-                    text = if (activeTitle.isNotEmpty()) activeTitle else "Sleep Schedule Running",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = SophisticatedTextPrimary
-                )
-
-                Text(
-                    text = "Blocked apps will be immediately prevented from opening. Put your phone away and get some sleep!",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = SophisticatedTextSecondary
-                )
-
-                AnimatedVisibility(visible = emergencySeconds > 0) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFE57373).copy(alpha = 0.2f))
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = Color(0xFFFFB4AB),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        val mins = emergencySeconds / 60
-                        val secs = emergencySeconds % 60
-                        Text(
-                            text = "5-Min Emergency Access Active: %02d:%02d remaining".format(mins, secs),
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFFFFB4AB)
-                        )
-                    }
-                }
-            }
-        }
-    } else {
-        Card(
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = SophisticatedSurface),
-            border = BorderStroke(1.dp, SophisticatedOutline.copy(alpha = 0.6f)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
+            // Technical Header
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(8.dp)
                         .clip(CircleShape)
-                        .background(SophisticatedSurfaceVariant),
+                        .background(NothingRed)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "SCHEDULE PROTOCOL",
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        letterSpacing = 1.2.sp
+                    ),
+                    color = NothingRed
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "[${schedules.count { it.isEnabled }} ACTIVE]",
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.sp
+                    ),
+                    color = NothingTextMuted
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "SLEEP & DETOX",
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    letterSpacing = 0.5.sp
+                ),
+                color = NothingWhite
+            )
+
+            Text(
+                text = "Automated distraction lock during rest hours",
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp
+                ),
+                color = NothingTextSecondary
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            if (schedules.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = SophisticatedTextSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "NO SCHEDULES CONFIGURED",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            ),
+                            color = NothingTextMuted
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tap + to initialize a sleep protocol",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp
+                            ),
+                            color = NothingTextSecondary
+                        )
+                    }
                 }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Sleep Blocker Armed",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = SophisticatedTextPrimary
-                    )
-                    Text(
-                        text = "Schedules will automatically activate at their configured bedtime.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SophisticatedTextMuted
-                    )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    items(schedules, key = { it.id }) { schedule ->
+                        ScheduleCard(
+                            schedule = schedule,
+                            onToggle = { isEnabled ->
+                                viewModel.setScheduleEnabled(schedule.id, isEnabled)
+                            },
+                            onEdit = { editingSchedule = schedule },
+                            onDelete = { viewModel.deleteSchedule(schedule.id) }
+                        )
+                    }
                 }
             }
         }
     }
+
+    if (isCreatingNew) {
+        ScheduleEditorDialog(
+            initialSchedule = null,
+            installedApps = installedApps,
+            onDismiss = { isCreatingNew = false },
+            onSave = { newSchedule ->
+                viewModel.saveSchedule(newSchedule)
+                isCreatingNew = false
+            }
+        )
+    }
+
+    editingSchedule?.let { scheduleToEdit ->
+        ScheduleEditorDialog(
+            initialSchedule = scheduleToEdit,
+            installedApps = installedApps,
+            onDismiss = { editingSchedule = null },
+            onSave = { updatedSchedule ->
+                viewModel.updateSchedule(updatedSchedule)
+                editingSchedule = null
+            }
+        )
+    }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ScheduleItemCard(
+fun ScheduleCard(
     schedule: SleepScheduleEntity,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val blockedCount = schedule.getBlockedPackageSet().size
+    val isCurrentlyActive = remember(schedule) {
+        isScheduleNow(schedule)
+    }
 
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (schedule.isEnabled) SophisticatedCardContainer else SophisticatedSurface
-        ),
-        border = BorderStroke(
-            0.5.dp,
-            if (schedule.isEnabled) SophisticatedPrimary.copy(alpha = 0.4f) else SophisticatedOutline
-        ),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(NothingSurface)
+            .border(
+                BorderStroke(
+                    1.dp,
+                    if (isCurrentlyActive && schedule.isEnabled) NothingRed else NothingOutline
+                ),
+                RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp)
             .testTag("schedule_card_${schedule.id}")
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Top Row: Title, Time Range, and Switch
+        Column {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = schedule.title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = if (schedule.isEnabled) SophisticatedTextPrimary else SophisticatedTextMuted
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = schedule.formattedTimeRange(),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
+                        text = schedule.title.uppercase(),
+                        style = TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
                             letterSpacing = 0.5.sp
                         ),
-                        color = if (schedule.isEnabled) SophisticatedPrimary else SophisticatedTextMuted
+                        color = NothingWhite
                     )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    if (isCurrentlyActive && schedule.isEnabled) {
+                        Text(
+                            text = "● IN PROGRESS // RESTRICTED",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            ),
+                            color = NothingRed
+                        )
+                    } else {
+                        Text(
+                            text = if (schedule.isEnabled) "ACTIVE PROTOCOL" else "OFFLINE",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp
+                            ),
+                            color = NothingTextMuted
+                        )
+                    }
                 }
 
                 Switch(
                     checked = schedule.isEnabled,
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = AppleSystemGreen,
-                        uncheckedThumbColor = SophisticatedTextMuted,
-                        uncheckedTrackColor = SophisticatedSurfaceVariant
+                        checkedThumbColor = NothingWhite,
+                        checkedTrackColor = NothingRed,
+                        uncheckedThumbColor = NothingTextMuted,
+                        uncheckedTrackColor = NothingBlack,
+                        uncheckedBorderColor = NothingOutline
                     ),
-                    modifier = Modifier.testTag("schedule_switch_${schedule.id}")
+                    modifier = Modifier.testTag("switch_schedule_${schedule.id}")
                 )
             }
 
-            // Days of week
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Time range display
+            val startFormatted = String.format("%02d:%02d", schedule.startHour, schedule.startMinute)
+            val endFormatted = String.format("%02d:%02d", schedule.endHour, schedule.endMinute)
+
+            Text(
+                text = "$startFormatted → $endFormatted",
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    letterSpacing = 1.sp
+                ),
+                color = if (schedule.isEnabled) NothingWhite else NothingTextMuted
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Days badges
+            val activeDays = schedule.daysOfWeek.split(",").map { it.trim().uppercase() }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                schedule.getDaysSet().forEach { day ->
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = day,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN").forEach { day ->
+                    val isDayActive = activeDays.contains(day)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                if (isDayActive && schedule.isEnabled) NothingRed.copy(alpha = 0.2f)
+                                else Color.Transparent
                             )
-                        },
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = SophisticatedSurfaceVariant,
-                            labelColor = if (schedule.isEnabled) SophisticatedTextSecondary else SophisticatedTextMuted
-                        ),
-                        border = SuggestionChipDefaults.suggestionChipBorder(
-                            enabled = true,
-                            borderColor = SophisticatedOutline
-                        ),
-                        modifier = Modifier.height(28.dp)
-                    )
+                            .border(
+                                BorderStroke(
+                                    0.5.dp,
+                                    if (isDayActive && schedule.isEnabled) NothingRed else NothingOutline
+                                ),
+                                RoundedCornerShape(6.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = day.take(1),
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = if (isDayActive) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 9.sp
+                            ),
+                            color = if (isDayActive && schedule.isEnabled) NothingWhite else NothingTextMuted
+                        )
+                    }
                 }
-            }
 
-            // Blocked Apps Information
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(SophisticatedSurfaceVariant.copy(alpha = 0.5f))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = if (blockedCount > 0) SophisticatedPrimary else SophisticatedTextMuted,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = if (blockedCount == 0) "No apps blocked" else "$blockedCount apps restricted",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = if (blockedCount > 0) SophisticatedTextPrimary else SophisticatedTextMuted
-                    )
-                }
-            }
+                Spacer(modifier = Modifier.weight(1f))
 
-            // Action Buttons (Edit / Delete)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
                 IconButton(
                     onClick = onEdit,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .testTag("edit_schedule_${schedule.id}")
+                    modifier = Modifier.size(28.dp).testTag("edit_schedule_${schedule.id}")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit Schedule",
-                        tint = SophisticatedTextSecondary,
-                        modifier = Modifier.size(18.dp)
+                        tint = NothingTextSecondary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(4.dp))
-
                 IconButton(
                     onClick = onDelete,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .testTag("delete_schedule_${schedule.id}")
+                    modifier = Modifier.size(28.dp).testTag("delete_schedule_${schedule.id}")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete Schedule",
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
-                        modifier = Modifier.size(18.dp)
+                        tint = NothingTextMuted,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
         }
+    }
+}
+
+private fun isScheduleNow(schedule: SleepScheduleEntity): Boolean {
+    val cal = Calendar.getInstance()
+    val currentMinutes = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+    val startMinutes = schedule.startHour * 60 + schedule.startMinute
+    val endMinutes = schedule.endHour * 60 + schedule.endMinute
+
+    return if (startMinutes <= endMinutes) {
+        currentMinutes in startMinutes..endMinutes
+    } else {
+        currentMinutes >= startMinutes || currentMinutes <= endMinutes
     }
 }

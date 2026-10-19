@@ -89,6 +89,28 @@ data class SleepScheduleEntity(
         }
     }
 
+    fun getRemainingActiveDurationMs(calendar: Calendar = Calendar.getInstance()): Long {
+        if (!isActiveAt(calendar)) return 0L
+
+        val currentMinutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+        val seconds = calendar.get(Calendar.SECOND)
+        val startMinutes = startHour * 60 + startMinute
+        val endMinutes = endHour * 60 + endMinute
+
+        val remainingMinutes = if (startMinutes < endMinutes) {
+            endMinutes - currentMinutes
+        } else {
+            if (currentMinutes >= startMinutes) {
+                (24 * 60 - currentMinutes) + endMinutes
+            } else {
+                endMinutes - currentMinutes
+            }
+        }
+
+        val remainingMs = (remainingMinutes.toLong() * 60L - seconds.toLong()) * 1000L
+        return remainingMs.coerceAtLeast(10_000L)
+    }
+
     companion object {
         val ALL_DAYS = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
         val WEEKDAYS = listOf("MON", "TUE", "WED", "THU", "FRI")

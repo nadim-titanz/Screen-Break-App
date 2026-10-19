@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,16 +54,18 @@ import androidx.compose.ui.unit.sp
 import com.example.model.AppItem
 import com.example.ui.ScreenBreakViewModel
 import com.example.ui.components.AppIconView
-import com.example.ui.theme.AppleSystemGreen
-import com.example.ui.theme.SophisticatedCardContainer
-import com.example.ui.theme.SophisticatedOnPrimary
-import com.example.ui.theme.SophisticatedOutline
-import com.example.ui.theme.SophisticatedPrimary
-import com.example.ui.theme.SophisticatedSurface
-import com.example.ui.theme.SophisticatedSurfaceVariant
-import com.example.ui.theme.SophisticatedTextMuted
-import com.example.ui.theme.SophisticatedTextPrimary
-import com.example.ui.theme.SophisticatedTextSecondary
+import com.example.ui.theme.NothingBlack
+import com.example.ui.theme.NothingCardContainer
+import com.example.ui.theme.NothingOutline
+import com.example.ui.theme.NothingOutlineVariant
+import com.example.ui.theme.NothingRed
+import com.example.ui.theme.NothingSurface
+import com.example.ui.theme.NothingSurfaceElevated
+import com.example.ui.theme.NothingTextDisabled
+import com.example.ui.theme.NothingTextMuted
+import com.example.ui.theme.NothingTextPrimary
+import com.example.ui.theme.NothingTextSecondary
+import com.example.ui.theme.NothingWhite
 
 @Composable
 fun IgnoredAppsScreen(
@@ -78,46 +81,52 @@ fun IgnoredAppsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .background(NothingBlack)
+            .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
-        // Information banner
+        // Information Banner
         Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = SophisticatedSurface),
-            border = BorderStroke(1.dp, SophisticatedOutline),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = NothingSurface),
+            border = BorderStroke(1.dp, NothingOutline),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(SophisticatedCardContainer),
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(NothingSurfaceElevated),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.NotificationsOff,
                         contentDescription = null,
-                        tint = SophisticatedPrimary,
-                        modifier = Modifier.size(20.dp)
+                        tint = NothingWhite,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Apps that won't trigger pop-ups",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = SophisticatedTextPrimary
+                        text = "// EXCLUSION PROTOCOL",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp
+                        ),
+                        color = NothingWhite
                     )
                     Text(
-                        text = "When using an ignored app, screen break pop-ups stay suppressed.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SophisticatedTextSecondary
+                        text = "Apps marked as ignored will operate quietly without triggering break reminders.",
+                        style = androidx.compose.ui.text.TextStyle(fontSize = 11.sp),
+                        color = NothingTextSecondary
                     )
                 }
             }
@@ -131,15 +140,21 @@ fun IgnoredAppsScreen(
             onValueChange = { viewModel.setSearchQuery(it) },
             placeholder = {
                 Text(
-                    "Search apps...",
-                    color = SophisticatedTextSecondary
+                    "SEARCH PACKAGES...",
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 12.sp,
+                        letterSpacing = 0.5.sp
+                    ),
+                    color = NothingTextSecondary
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search icon",
-                    tint = SophisticatedTextSecondary
+                    tint = NothingTextSecondary,
+                    modifier = Modifier.size(18.dp)
                 )
             },
             trailingIcon = {
@@ -148,20 +163,21 @@ fun IgnoredAppsScreen(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Clear search",
-                            tint = SophisticatedTextSecondary
+                            tint = NothingTextSecondary,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
             },
             singleLine = true,
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = SophisticatedTextPrimary,
-                unfocusedTextColor = SophisticatedTextPrimary,
-                focusedContainerColor = SophisticatedSurfaceVariant,
-                unfocusedContainerColor = SophisticatedSurfaceVariant,
-                focusedBorderColor = SophisticatedPrimary,
-                unfocusedBorderColor = SophisticatedOutline
+                focusedTextColor = NothingWhite,
+                unfocusedTextColor = NothingWhite,
+                focusedContainerColor = NothingSurface,
+                unfocusedContainerColor = NothingSurface,
+                focusedBorderColor = NothingRed,
+                unfocusedBorderColor = NothingOutline
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -170,30 +186,7 @@ fun IgnoredAppsScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Section header with title & counts
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "IGNORE THESE APPS",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
-                ),
-                color = SophisticatedPrimary
-            )
-            Text(
-                text = "$totalIgnored Selected",
-                style = MaterialTheme.typography.labelSmall,
-                color = SophisticatedTextMuted
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Filter chips and reload
+        // Section Header with Counts and Filters
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -203,16 +196,26 @@ fun IgnoredAppsScreen(
                 FilterChip(
                     selected = !filterIgnoredOnly,
                     onClick = { viewModel.setFilterIgnoredOnly(false) },
-                    label = { Text("All (${installedApps.size})") },
+                    label = {
+                        Text(
+                            "ALL [${installedApps.size}]",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                fontWeight = if (!filterIgnoredOnly) FontWeight.Bold else FontWeight.Normal
+                            )
+                        )
+                    },
+                    shape = RoundedCornerShape(999.dp),
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = SophisticatedCardContainer,
-                        selectedLabelColor = SophisticatedPrimary,
-                        containerColor = SophisticatedSurfaceVariant,
-                        labelColor = SophisticatedTextSecondary
+                        selectedContainerColor = NothingRed,
+                        selectedLabelColor = NothingWhite,
+                        containerColor = NothingSurfaceElevated,
+                        labelColor = NothingTextSecondary
                     ),
                     border = FilterChipDefaults.filterChipBorder(
-                        borderColor = SophisticatedOutline,
-                        selectedBorderColor = SophisticatedPrimary,
+                        borderColor = NothingOutline,
+                        selectedBorderColor = NothingRed,
                         enabled = true,
                         selected = !filterIgnoredOnly
                     )
@@ -220,16 +223,26 @@ fun IgnoredAppsScreen(
                 FilterChip(
                     selected = filterIgnoredOnly,
                     onClick = { viewModel.setFilterIgnoredOnly(true) },
-                    label = { Text("Ignored ($totalIgnored)") },
+                    label = {
+                        Text(
+                            "EXCLUDED [${totalIgnored}]",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                fontWeight = if (filterIgnoredOnly) FontWeight.Bold else FontWeight.Normal
+                            )
+                        )
+                    },
+                    shape = RoundedCornerShape(999.dp),
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = SophisticatedCardContainer,
-                        selectedLabelColor = SophisticatedPrimary,
-                        containerColor = SophisticatedSurfaceVariant,
-                        labelColor = SophisticatedTextSecondary
+                        selectedContainerColor = NothingRed,
+                        selectedLabelColor = NothingWhite,
+                        containerColor = NothingSurfaceElevated,
+                        labelColor = NothingTextSecondary
                     ),
                     border = FilterChipDefaults.filterChipBorder(
-                        borderColor = SophisticatedOutline,
-                        selectedBorderColor = SophisticatedPrimary,
+                        borderColor = NothingOutline,
+                        selectedBorderColor = NothingRed,
                         enabled = true,
                         selected = filterIgnoredOnly
                     )
@@ -240,15 +253,16 @@ fun IgnoredAppsScreen(
                 onClick = { viewModel.loadInstalledApps() },
                 modifier = Modifier
                     .testTag("reload_apps_button")
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
-                    .background(SophisticatedSurfaceVariant)
+                    .background(NothingSurfaceElevated)
+                    .border(BorderStroke(1.dp, NothingOutline), CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Reload apps",
-                    tint = SophisticatedTextSecondary,
-                    modifier = Modifier.size(18.dp)
+                    tint = NothingWhite,
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -265,14 +279,18 @@ fun IgnoredAppsScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(40.dp),
-                        color = SophisticatedPrimary
+                        modifier = Modifier.size(36.dp),
+                        color = NothingRed
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Loading installed apps...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SophisticatedTextSecondary
+                        text = "ENUMERATING PACKAGES...",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp
+                        ),
+                        color = NothingTextSecondary
                     )
                 }
             }
@@ -287,14 +305,18 @@ fun IgnoredAppsScreen(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = null,
-                        modifier = Modifier.size(56.dp),
-                        tint = SophisticatedOutline
+                        modifier = Modifier.size(48.dp),
+                        tint = NothingTextMuted
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = if (searchQuery.isNotEmpty()) "No apps found matching \"$searchQuery\"" else "No apps available",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = SophisticatedTextSecondary
+                        text = if (searchQuery.isNotEmpty()) "NO MATCHES FOR \"$searchQuery\"" else "NO PACKAGES FOUND",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = NothingTextSecondary
                     )
                 }
             }
@@ -325,15 +347,12 @@ fun AppItemRow(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SophisticatedSurfaceVariant
-        ),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = NothingSurface),
         border = BorderStroke(
             1.dp,
-            if (app.isIgnored) SophisticatedPrimary.copy(alpha = 0.5f) else SophisticatedOutline
+            if (app.isIgnored) NothingOutlineVariant else NothingOutline
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier
             .fillMaxWidth()
             .clickable { onToggle() }
@@ -342,13 +361,13 @@ fun AppItemRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             AppIconView(
                 drawable = app.icon,
-                size = 44.dp
+                size = 40.dp
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -358,28 +377,30 @@ fun AppItemRow(
                 ) {
                     Text(
                         text = app.appName,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = SophisticatedTextPrimary
+                        color = NothingWhite
                     )
                     if (app.isIgnored) {
                         Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = SophisticatedPrimary
+                            shape = RoundedCornerShape(4.dp),
+                            color = NothingRed
                         ) {
                             Text(
-                                text = "IGNORED",
-                                style = MaterialTheme.typography.labelSmall.copy(
+                                text = "EXCLUDED",
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 9.sp,
                                     letterSpacing = 0.5.sp
                                 ),
-                                color = SophisticatedOnPrimary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                color = NothingWhite,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                             )
                         }
                     }
@@ -387,8 +408,11 @@ fun AppItemRow(
 
                 Text(
                     text = app.packageName,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                    color = SophisticatedTextSecondary,
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.sp
+                    ),
+                    color = NothingTextSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -398,10 +422,10 @@ fun AppItemRow(
                 checked = app.isIgnored,
                 onCheckedChange = { onToggle() },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = AppleSystemGreen,
-                    uncheckedThumbColor = SophisticatedTextSecondary,
-                    uncheckedTrackColor = SophisticatedOutline
+                    checkedThumbColor = NothingWhite,
+                    checkedTrackColor = NothingRed,
+                    uncheckedThumbColor = NothingTextSecondary,
+                    uncheckedTrackColor = NothingOutline
                 ),
                 modifier = Modifier.testTag("toggle_${app.packageName}")
             )

@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,13 +70,18 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
 import com.example.data.SleepScheduleEntity
 import com.example.model.AppItem
-import com.example.ui.theme.SophisticatedCardContainer
-import com.example.ui.theme.SophisticatedOutline
-import com.example.ui.theme.SophisticatedPrimary
-import com.example.ui.theme.SophisticatedSurface
-import com.example.ui.theme.SophisticatedTextMuted
-import com.example.ui.theme.SophisticatedTextPrimary
-import com.example.ui.theme.SophisticatedTextSecondary
+import com.example.ui.theme.NothingBlack
+import com.example.ui.theme.NothingCardContainer
+import com.example.ui.theme.NothingOutline
+import com.example.ui.theme.NothingOutlineVariant
+import com.example.ui.theme.NothingRed
+import com.example.ui.theme.NothingSurface
+import com.example.ui.theme.NothingSurfaceElevated
+import com.example.ui.theme.NothingTextDisabled
+import com.example.ui.theme.NothingTextMuted
+import com.example.ui.theme.NothingTextPrimary
+import com.example.ui.theme.NothingTextSecondary
+import com.example.ui.theme.NothingWhite
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -118,9 +125,9 @@ fun ScheduleEditorDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = SophisticatedSurface),
-            border = BorderStroke(1.dp, SophisticatedOutline),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = NothingSurface),
+            border = BorderStroke(1.dp, NothingOutline),
             modifier = Modifier
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.92f)
@@ -138,28 +145,24 @@ fun ScheduleEditorDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(SophisticatedPrimary.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Bedtime,
-                                contentDescription = null,
-                                tint = SophisticatedPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                    Column {
                         Text(
-                            text = if (initialSchedule == null) "New Sleep Schedule" else "Edit Schedule",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = SophisticatedTextPrimary
+                            text = "// SCHEDULE CONFIG",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                                letterSpacing = 1.sp
+                            ),
+                            color = NothingRed
+                        )
+                        Text(
+                            text = if (initialSchedule == null) "NEW SLEEP SCHEDULE" else "EDIT SCHEDULE",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            ),
+                            color = NothingWhite
                         )
                     }
 
@@ -170,7 +173,7 @@ fun ScheduleEditorDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = SophisticatedTextSecondary
+                            tint = NothingTextSecondary
                         )
                     }
                 }
@@ -187,23 +190,35 @@ fun ScheduleEditorDialog(
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = "Schedule Name",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = SophisticatedTextSecondary
+                                text = "SCHEDULE NAME",
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 11.sp,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = NothingTextSecondary
                             )
                             OutlinedTextField(
                                 value = title,
                                 onValueChange = { title = it },
-                                placeholder = { Text("e.g. Night Sleep, Bedtime Wind-down") },
+                                placeholder = {
+                                    Text(
+                                        "e.g. Night Sleep, Bedtime Wind-down",
+                                        color = NothingTextMuted
+                                    )
+                                },
                                 singleLine = true,
+                                shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("schedule_title_input"),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = SophisticatedPrimary,
-                                    unfocusedBorderColor = SophisticatedOutline,
-                                    focusedTextColor = SophisticatedTextPrimary,
-                                    unfocusedTextColor = SophisticatedTextPrimary
+                                    focusedBorderColor = NothingRed,
+                                    unfocusedBorderColor = NothingOutline,
+                                    focusedTextColor = NothingWhite,
+                                    unfocusedTextColor = NothingWhite,
+                                    focusedContainerColor = NothingSurfaceElevated,
+                                    unfocusedContainerColor = NothingSurfaceElevated
                                 )
                             )
                         }
@@ -213,9 +228,13 @@ fun ScheduleEditorDialog(
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = "Blocking Window",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = SophisticatedTextSecondary
+                                text = "RESTRICTION WINDOW",
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 11.sp,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = NothingTextSecondary
                             )
 
                             Row(
@@ -224,7 +243,7 @@ fun ScheduleEditorDialog(
                             ) {
                                 // Start Time
                                 TimeAdjusterCard(
-                                    label = "Start (Bedtime)",
+                                    label = "START [BEDTIME]",
                                     hour = startHour,
                                     minute = startMinute,
                                     modifier = Modifier.weight(1f),
@@ -236,7 +255,7 @@ fun ScheduleEditorDialog(
 
                                 // End Time
                                 TimeAdjusterCard(
-                                    label = "End (Wake up)",
+                                    label = "END [WAKE UP]",
                                     hour = endHour,
                                     minute = endMinute,
                                     modifier = Modifier.weight(1f),
@@ -258,16 +277,24 @@ fun ScheduleEditorDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Active Days",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = SophisticatedTextSecondary
+                                    text = "ACTIVE DAYS",
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 11.sp,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = NothingTextSecondary
                                 )
 
                                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Text(
-                                        text = "All",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = SophisticatedPrimary,
+                                        text = "ALL",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        ),
+                                        color = NothingRed,
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
                                             .clickable {
@@ -276,9 +303,13 @@ fun ScheduleEditorDialog(
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     )
                                     Text(
-                                        text = "Weekdays",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = SophisticatedPrimary,
+                                        text = "WEEKDAYS",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        ),
+                                        color = NothingRed,
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
                                             .clickable {
@@ -305,12 +336,28 @@ fun ScheduleEditorDialog(
                                                 selectedDays + day
                                             }
                                         },
-                                        label = { Text(day, fontSize = 12.sp) },
+                                        label = {
+                                            Text(
+                                                day,
+                                                style = androidx.compose.ui.text.TextStyle(
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                                )
+                                            )
+                                        },
+                                        shape = RoundedCornerShape(999.dp),
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = SophisticatedPrimary,
-                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                            containerColor = SophisticatedCardContainer,
-                                            labelColor = SophisticatedTextSecondary
+                                            selectedContainerColor = NothingRed,
+                                            selectedLabelColor = NothingWhite,
+                                            containerColor = NothingSurfaceElevated,
+                                            labelColor = NothingTextSecondary
+                                        ),
+                                        border = FilterChipDefaults.filterChipBorder(
+                                            borderColor = NothingOutline,
+                                            selectedBorderColor = NothingRed,
+                                            enabled = true,
+                                            selected = isSelected
                                         )
                                     )
                                 }
@@ -333,21 +380,29 @@ fun ScheduleEditorDialog(
                                     Icon(
                                         imageVector = Icons.Default.Apps,
                                         contentDescription = null,
-                                        tint = SophisticatedPrimary,
+                                        tint = NothingRed,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
-                                        text = "Blocked Apps (${selectedPackages.size} selected)",
-                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = SophisticatedTextPrimary
+                                        text = "BLOCKED APPS [${selectedPackages.size}]",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 11.sp,
+                                            letterSpacing = 0.5.sp
+                                        ),
+                                        color = NothingWhite
                                     )
                                 }
 
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(
-                                        text = "Select All",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = SophisticatedPrimary,
+                                        text = "SELECT ALL",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        ),
+                                        color = NothingRed,
                                         modifier = Modifier
                                             .clickable {
                                                 selectedPackages = installedApps.map { it.packageName }.toSet()
@@ -355,9 +410,13 @@ fun ScheduleEditorDialog(
                                             .padding(4.dp)
                                     )
                                     Text(
-                                        text = "Clear",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = SophisticatedTextMuted,
+                                        text = "CLEAR",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        ),
+                                        color = NothingTextMuted,
                                         modifier = Modifier
                                             .clickable {
                                                 selectedPackages = emptySet()
@@ -367,36 +426,54 @@ fun ScheduleEditorDialog(
                                 }
                             }
 
+                            Text(
+                                text = "Selected apps will be blocked from opening during schedule window.",
+                                style = androidx.compose.ui.text.TextStyle(fontSize = 11.sp),
+                                color = NothingTextSecondary
+                            )
+
                             // Search Field
                             OutlinedTextField(
                                 value = appSearchQuery,
                                 onValueChange = { appSearchQuery = it },
-                                placeholder = { Text("Search apps to block...") },
+                                placeholder = {
+                                    Text(
+                                        "SEARCH APPS TO RESTRICT...",
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 11.sp
+                                        ),
+                                        color = NothingTextMuted
+                                    )
+                                },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Search,
                                         contentDescription = "Search",
-                                        tint = SophisticatedTextMuted,
+                                        tint = NothingTextMuted,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 },
                                 singleLine = true,
+                                shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("app_search_field"),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = SophisticatedPrimary,
-                                    unfocusedBorderColor = SophisticatedOutline,
-                                    focusedTextColor = SophisticatedTextPrimary,
-                                    unfocusedTextColor = SophisticatedTextPrimary
+                                    focusedBorderColor = NothingRed,
+                                    unfocusedBorderColor = NothingOutline,
+                                    focusedTextColor = NothingWhite,
+                                    unfocusedTextColor = NothingWhite,
+                                    focusedContainerColor = NothingSurfaceElevated,
+                                    unfocusedContainerColor = NothingSurfaceElevated
                                 )
                             )
 
                             // App list container
                             Card(
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = SophisticatedCardContainer),
-                                border = BorderStroke(1.dp, SophisticatedOutline),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = CardDefaults.cardColors(containerColor = NothingBlack),
+                                border = BorderStroke(1.dp, NothingOutline),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(max = 240.dp)
@@ -409,9 +486,12 @@ fun ScheduleEditorDialog(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = if (appSearchQuery.isEmpty()) "No apps found" else "No matching apps",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = SophisticatedTextMuted
+                                            text = if (appSearchQuery.isEmpty()) "NO APPS FOUND" else "NO MATCHING APPS",
+                                            style = androidx.compose.ui.text.TextStyle(
+                                                fontFamily = FontFamily.Monospace,
+                                                fontSize = 11.sp
+                                            ),
+                                            color = NothingTextMuted
                                         )
                                     }
                                 } else {
@@ -447,8 +527,9 @@ fun ScheduleEditorDialog(
                                                         }
                                                     },
                                                     colors = CheckboxDefaults.colors(
-                                                        checkedColor = SophisticatedPrimary,
-                                                        checkmarkColor = MaterialTheme.colorScheme.onPrimary
+                                                        checkedColor = NothingRed,
+                                                        checkmarkColor = NothingWhite,
+                                                        uncheckedColor = NothingOutline
                                                     )
                                                 )
 
@@ -465,12 +546,12 @@ fun ScheduleEditorDialog(
                                                         modifier = Modifier
                                                             .size(32.dp)
                                                             .clip(RoundedCornerShape(6.dp))
-                                                            .background(SophisticatedOutline),
+                                                            .background(NothingSurfaceElevated),
                                                         contentAlignment = Alignment.Center
                                                     ) {
                                                         Text(
                                                             text = app.appName.take(1).uppercase(),
-                                                            color = SophisticatedTextPrimary,
+                                                            color = NothingWhite,
                                                             fontWeight = FontWeight.Bold,
                                                             fontSize = 14.sp
                                                         )
@@ -480,14 +561,21 @@ fun ScheduleEditorDialog(
                                                 Column(modifier = Modifier.weight(1f)) {
                                                     Text(
                                                         text = app.appName,
-                                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                                        color = SophisticatedTextPrimary,
+                                                        style = androidx.compose.ui.text.TextStyle(
+                                                            fontFamily = FontFamily.SansSerif,
+                                                            fontWeight = FontWeight.Medium,
+                                                            fontSize = 13.sp
+                                                        ),
+                                                        color = NothingWhite,
                                                         maxLines = 1
                                                     )
                                                     Text(
                                                         text = app.packageName,
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = SophisticatedTextMuted,
+                                                        style = androidx.compose.ui.text.TextStyle(
+                                                            fontFamily = FontFamily.Monospace,
+                                                            fontSize = 10.sp
+                                                        ),
+                                                        color = NothingTextMuted,
                                                         maxLines = 1
                                                     )
                                                 }
@@ -511,11 +599,19 @@ fun ScheduleEditorDialog(
                         onClick = onDismiss,
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp)
+                            .height(46.dp)
                             .testTag("cancel_schedule_button"),
-                        border = BorderStroke(1.dp, SophisticatedOutline)
+                        shape = RoundedCornerShape(999.dp),
+                        border = BorderStroke(1.dp, NothingOutline)
                     ) {
-                        Text("Cancel", color = SophisticatedTextSecondary)
+                        Text(
+                            "CANCEL",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp
+                            ),
+                            color = NothingTextSecondary
+                        )
                     }
 
                     Button(
@@ -536,20 +632,28 @@ fun ScheduleEditorDialog(
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp)
+                            .height(46.dp)
                             .testTag("save_schedule_button"),
+                        shape = RoundedCornerShape(999.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SophisticatedPrimary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = NothingRed,
+                            contentColor = NothingWhite
                         )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Save Schedule", fontWeight = FontWeight.Bold)
+                        Text(
+                            "SAVE SCHEDULE",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        )
                     }
                 }
             }
@@ -566,9 +670,9 @@ fun TimeAdjusterCard(
     onTimeChange: (Int, Int) -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SophisticatedCardContainer),
-        border = BorderStroke(1.dp, SophisticatedOutline),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = NothingSurfaceElevated),
+        border = BorderStroke(1.dp, NothingOutline),
         modifier = modifier
     ) {
         Column(
@@ -580,19 +684,25 @@ fun TimeAdjusterCard(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = SophisticatedTextMuted
+                style = androidx.compose.ui.text.TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.5.sp
+                ),
+                color = NothingTextMuted
             )
 
             // Formatted 12h display
             val formatted = SleepScheduleEntity.formatTime12h(hour, minute)
             Text(
                 text = formatted,
-                style = MaterialTheme.typography.titleMedium.copy(
+                style = androidx.compose.ui.text.TextStyle(
+                    fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
                     letterSpacing = 0.5.sp
                 ),
-                color = SophisticatedPrimary
+                color = NothingWhite
             )
 
             // Hour and Minute Controls
@@ -603,7 +713,14 @@ fun TimeAdjusterCard(
             ) {
                 // Hour -1 / +1
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Hour", style = MaterialTheme.typography.labelSmall, color = SophisticatedTextMuted)
+                    Text(
+                        "HR",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.sp
+                        ),
+                        color = NothingTextMuted
+                    )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(
                             onClick = {
@@ -615,14 +732,18 @@ fun TimeAdjusterCard(
                             Icon(
                                 imageVector = Icons.Default.Remove,
                                 contentDescription = "Decrease hour",
-                                tint = SophisticatedTextSecondary,
+                                tint = NothingTextSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
                         Text(
                             text = "%02d".format(hour),
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = SophisticatedTextPrimary
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            ),
+                            color = NothingWhite
                         )
                         IconButton(
                             onClick = {
@@ -634,7 +755,7 @@ fun TimeAdjusterCard(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Increase hour",
-                                tint = SophisticatedTextSecondary,
+                                tint = NothingTextSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -643,7 +764,14 @@ fun TimeAdjusterCard(
 
                 // Minute -15 / +15
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Min", style = MaterialTheme.typography.labelSmall, color = SophisticatedTextMuted)
+                    Text(
+                        "MIN",
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.sp
+                        ),
+                        color = NothingTextMuted
+                    )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(
                             onClick = {
@@ -655,14 +783,18 @@ fun TimeAdjusterCard(
                             Icon(
                                 imageVector = Icons.Default.Remove,
                                 contentDescription = "Decrease minute",
-                                tint = SophisticatedTextSecondary,
+                                tint = NothingTextSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
                         Text(
                             text = "%02d".format(minute),
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = SophisticatedTextPrimary
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            ),
+                            color = NothingWhite
                         )
                         IconButton(
                             onClick = {
@@ -674,7 +806,7 @@ fun TimeAdjusterCard(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Increase minute",
-                                tint = SophisticatedTextSecondary,
+                                tint = NothingTextSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }

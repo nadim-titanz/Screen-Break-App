@@ -13,8 +13,10 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -59,12 +61,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.ScreenBreakViewModel
+import com.example.ui.screens.AppUsageStatsScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.IgnoredAppsScreen
 import com.example.ui.screens.SettingsDialog
@@ -77,6 +81,12 @@ import com.example.ui.theme.BrickTextMuted
 import com.example.ui.theme.BrickTextPrimary
 import com.example.ui.theme.BrickTextSecondary
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.NothingBlack
+import com.example.ui.theme.NothingOutline
+import com.example.ui.theme.NothingRed
+import com.example.ui.theme.NothingSurface
+import com.example.ui.theme.NothingTextSecondary
+import com.example.ui.theme.NothingWhite
 
 class MainActivity : ComponentActivity() {
 
@@ -105,9 +115,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val targetTab = intent.getIntExtra("target_tab", 0)
         setContent {
             MyApplicationTheme {
-                ScreenBreakApp(viewModel = viewModel)
+                ScreenBreakApp(viewModel = viewModel, initialTab = targetTab)
             }
         }
     }
@@ -120,8 +131,8 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenBreakApp(viewModel: ScreenBreakViewModel) {
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+fun ScreenBreakApp(viewModel: ScreenBreakViewModel, initialTab: Int = 0) {
+    var selectedTab by rememberSaveable { mutableIntStateOf(initialTab) }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     val usageState by viewModel.usageState.collectAsStateWithLifecycle()
@@ -135,13 +146,14 @@ fun ScreenBreakApp(viewModel: ScreenBreakViewModel) {
     val suppressedCount by viewModel.suppressedCount.collectAsStateWithLifecycle()
     val hasUsageAccess by viewModel.hasUsageAccess.collectAsStateWithLifecycle()
     val hasOverlayPermission by viewModel.hasOverlayPermission.collectAsStateWithLifecycle()
+    val hasNotificationAccess by viewModel.hasNotificationAccess.collectAsStateWithLifecycle()
 
     val ignoredCount = installedApps.count { it.isIgnored }
 
     Scaffold(
-        containerColor = BrickBackground,
+        containerColor = NothingBlack,
         topBar = {
-            // Minimal Header inspired by Brick
+            // Nothing OS Minimal Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,41 +167,47 @@ fun ScreenBreakApp(viewModel: ScreenBreakViewModel) {
                         painter = painterResource(id = R.drawable.img_app_icon),
                         contentDescription = "Interrupt logo",
                         modifier = Modifier
-                            .size(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .size(30.dp)
+                            .clip(RoundedCornerShape(6.dp))
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text(
-                            text = when (selectedTab) {
-                                0 -> "Interrupt"
-                                1 -> "Schedule"
-                                2 -> "Settings"
-                                else -> "Interrupt"
-                            },
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 17.sp,
-                                letterSpacing = (-0.3).sp
-                            ),
-                            color = BrickTextPrimary
-                        )
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = when (selectedTab) {
+                                    0 -> "INTERRUPT"
+                                    1 -> "USAGE STATS"
+                                    2 -> "SCHEDULES"
+                                    3 -> "EXCLUSIONS"
+                                    else -> "INTERRUPT"
+                                },
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    letterSpacing = 1.sp
+                                ),
+                                color = NothingWhite
+                            )
                             if (usageState.isServiceRunning) {
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
                                         .clip(CircleShape)
-                                        .background(BrickAccentDot)
+                                        .background(NothingRed)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
                             }
-                            Text(
-                                text = if (usageState.isServiceRunning) "Focus active" else "Paused",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                                color = BrickTextSecondary
-                            )
                         }
+                        Text(
+                            text = if (usageState.isServiceRunning) "// ACTIVE • ${usageState.intervalMinutes}M NUDGE" else "// MONITOR PAUSED",
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                                letterSpacing = 0.8.sp
+                            ),
+                            color = NothingTextSecondary
+                        )
                     }
                 }
 
@@ -199,12 +217,13 @@ fun ScreenBreakApp(viewModel: ScreenBreakViewModel) {
                         .testTag("settings_button")
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(BrickSurface)
+                        .background(NothingSurface)
+                        .border(BorderStroke(1.dp, NothingOutline), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
-                        tint = BrickTextPrimary,
+                        tint = NothingWhite,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -236,12 +255,17 @@ fun ScreenBreakApp(viewModel: ScreenBreakViewModel) {
                     ignoredAppsCount = ignoredCount,
                     hasUsageAccess = hasUsageAccess,
                     hasOverlayPermission = hasOverlayPermission,
-                    onNavigateToIgnored = { selectedTab = 2 }
+                    hasNotificationAccess = hasNotificationAccess,
+                    onNavigateToStats = { selectedTab = 1 },
+                    onNavigateToIgnored = { selectedTab = 3 }
                 )
-                1 -> SleepSchedulesScreen(
+                1 -> AppUsageStatsScreen(
                     viewModel = viewModel
                 )
-                2 -> IgnoredAppsScreen(
+                2 -> SleepSchedulesScreen(
+                    viewModel = viewModel
+                )
+                3 -> IgnoredAppsScreen(
                     viewModel = viewModel,
                     installedApps = installedApps,
                     searchQuery = searchQuery,
@@ -274,13 +298,13 @@ fun BrickBottomNavBar(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = BrickBackground,
+        color = NothingBlack,
         modifier = modifier
             .fillMaxWidth()
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
                 drawLine(
-                    color = BrickOutline,
+                    color = NothingOutline,
                     start = Offset(0f, 0f),
                     end = Offset(size.width, 0f),
                     strokeWidth = strokeWidth
@@ -296,8 +320,8 @@ fun BrickBottomNavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val tabLabels = listOf("Interrupt", "Schedule", "Settings")
-            val tabTags = listOf("tab_dashboard", "tab_schedule", "tab_ignored_apps")
+            val tabLabels = listOf("MONITOR", "STATS", "SCHEDULE", "EXCLUSIONS")
+            val tabTags = listOf("tab_dashboard", "tab_stats", "tab_schedule", "tab_ignored_apps")
 
             tabLabels.forEachIndexed { index, label ->
                 val isSelected = selectedTab == index
@@ -319,12 +343,13 @@ fun BrickBottomNavBar(
                 ) {
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                            fontSize = 15.sp,
-                            letterSpacing = (-0.2).sp
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp
                         ),
-                        color = if (isSelected) BrickTextPrimary else BrickTextSecondary
+                        color = if (isSelected) NothingWhite else NothingTextSecondary
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -334,7 +359,7 @@ fun BrickBottomNavBar(
                             modifier = Modifier
                                 .size(4.dp)
                                 .clip(CircleShape)
-                                .background(BrickTextPrimary)
+                                .background(NothingRed)
                         )
                     } else {
                         Spacer(modifier = Modifier.size(4.dp))

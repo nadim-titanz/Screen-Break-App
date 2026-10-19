@@ -15,7 +15,8 @@ data class UsageState(
     val isSleepScheduleActive: Boolean = false,
     val activeSleepScheduleTitle: String = "",
     val emergencySnoozeSecondsRemaining: Int = 0,
-    val emergencySnoozedPackage: String = ""
+    val emergencySnoozedPackage: String = "",
+    val hiddenNotificationCount: Int = 0
 ) {
     val progress: Float
         get() {

@@ -52,6 +52,15 @@
             android:excludeFromRecents="true"
             android:launchMode="singleTop" />
 
+        <activity
+            android:name=".ui.ReelsWarningActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyApplication"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop" />
+
         <service
             android:name=".service.ContinuousUsageService"
             android:exported="false"
@@ -60,6 +69,55 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Monitors continuous screen time to alert users when continuous phone usage reaches preset thresholds, supporting app exclusions" />
         </service>
+
+        <service
+            android:name=".service.SleepNotificationBlockerService"
+            android:label="@string/notification_listener_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.ReelsAndUsageAccessibilityService"
+            android:label="Reels Blocker &amp; Usage Service"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <receiver
+            android:name=".ui.widgets.ReelsWidgetProvider"
+            android:label="Reel Stats"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.reels.WIDGET_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_reels_metadata" />
+        </receiver>
+
+        <receiver
+            android:name=".ui.widgets.ScreentimeWidgetProvider"
+            android:label="ScreenTime Stats"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.screentime.WIDGET_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_screentime_metadata" />
+        </receiver>
 
     </application>
 

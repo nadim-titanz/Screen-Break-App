@@ -37,4 +37,17 @@ class ExampleRobolectricTest {
     assertEquals(0.5f, state2Min.progress, 0.01f)
     assertEquals("02:00", state2Min.formattedTarget)
   }
+
+  @Test
+  fun `service running state can be tracked for interval monitoring`() {
+    val activeState = com.example.model.UsageState(
+      isServiceRunning = true,
+      intervalMinutes = 10
+    )
+    assertEquals(true, activeState.isServiceRunning)
+    assertEquals(10, activeState.intervalMinutes)
+
+    val pausedState = activeState.copy(isServiceRunning = false)
+    assertEquals(false, pausedState.isServiceRunning)
+  }
 }

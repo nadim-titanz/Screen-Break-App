@@ -13,6 +13,7 @@ import com.example.model.ReminderSettings
 import com.example.model.UsageState
 import com.example.service.ContinuousUsageService
 import com.example.service.CurrentAppDetector
+import com.example.service.SleepNotificationBlockerService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -65,6 +66,9 @@ class ScreenBreakViewModel(
     private val _hasOverlayPermission = MutableStateFlow(CurrentAppDetector.hasOverlayPermission(appContext))
     val hasOverlayPermission: StateFlow<Boolean> = _hasOverlayPermission.asStateFlow()
 
+    private val _hasNotificationAccess = MutableStateFlow(SleepNotificationBlockerService.hasNotificationAccess(appContext))
+    val hasNotificationAccess: StateFlow<Boolean> = _hasNotificationAccess.asStateFlow()
+
     // Combined filtered installed apps
     val installedApps: StateFlow<List<AppItem>> = combine(
         _rawInstalledApps,
@@ -112,6 +116,7 @@ class ScreenBreakViewModel(
     fun refreshPermissions() {
         _hasUsageAccess.value = CurrentAppDetector.hasUsageAccess(appContext)
         _hasOverlayPermission.value = CurrentAppDetector.hasOverlayPermission(appContext)
+        _hasNotificationAccess.value = SleepNotificationBlockerService.hasNotificationAccess(appContext)
     }
 
     fun loadInstalledApps() {
@@ -143,6 +148,12 @@ class ScreenBreakViewModel(
         }
     }
 
+    fun setAppIgnored(packageName: String, appName: String, isIgnored: Boolean) {
+        viewModelScope.launch {
+            repository.setAppIgnored(packageName, appName, isIgnored)
+        }
+    }
+
     fun toggleService() {
         val isRunning = usageState.value.isServiceRunning
         if (isRunning) {
@@ -150,6 +161,14 @@ class ScreenBreakViewModel(
         } else {
             ContinuousUsageService.startService(appContext)
         }
+    }
+
+    fun startService() {
+        ContinuousUsageService.startService(appContext)
+    }
+
+    fun stopService() {
+        ContinuousUsageService.stopService(appContext)
     }
 
     fun resetTimer() {

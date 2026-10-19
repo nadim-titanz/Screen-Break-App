@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Interrupt</string>
+    <string name="notification_listener_label">Interrupt Sleep Notification Blocker</string>
+    <string name="accessibility_service_desc">Enables short-form video &amp; reels blocking, reel scroll counting, and detox monitoring.</string>
 </resources>

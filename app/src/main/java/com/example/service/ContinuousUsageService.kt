@@ -23,6 +23,7 @@ import com.example.data.SleepScheduleEntity
 import com.example.model.UsageState
 import com.example.ui.ReminderAlertActivity
 import com.example.ui.SleepBlockerActivity
+import com.example.util.ReelsTrackingManager
 import java.util.Calendar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,8 @@ class ContinuousUsageService : Service() {
     private var lockedAppName: String = ""
     private var lockedUntilTimestamp: Long = 0L
     private var lastBlockLogTime: Long = 0L
+    private var currentAppPackage: String = ""
+    private var currentAppElapsedSeconds: Long = 0L
 
     private var cachedSchedules: List<SleepScheduleEntity> = emptyList()
     private var cachedIgnoredPackages: Set<String> = emptySet()
@@ -71,6 +74,8 @@ class ContinuousUsageService : Service() {
                     // Screen turned off - continuous usage resets!
                     continuousSeconds = 0L
                     snoozeUntilSeconds = -1L
+                    currentAppElapsedSeconds = 0L
+                    overlayManager.hideCenterElapsedHUD()
                     updateNotification()
                     updateState()
                 }
@@ -175,6 +180,9 @@ class ContinuousUsageService : Service() {
                 val currentCalendar = Calendar.getInstance()
                 val activeSleepSchedule = cachedSchedules.firstOrNull { it.isActiveAt(currentCalendar) }
                 if (activeSleepSchedule != null) {
+                    if (tickCounter % 6 == 0) {
+                        SleepNotificationBlockerService.sweepActiveBlockedNotifications(this@ContinuousUsageService)
+                    }
                     val blockedPackages = activeSleepSchedule.getBlockedPackageSet()
                     if (blockedPackages.isNotEmpty()) {
                         val (currentFgPkg, currentFgName) = CurrentAppDetector.getForegroundApp(this@ContinuousUsageService)
@@ -266,6 +274,31 @@ class ContinuousUsageService : Service() {
                         // If user moved to an ignored app while overlay is showing, dismiss the overlay
                         if (isIgnored && overlayManager.isShowing) {
                             overlayManager.dismiss()
+                        }
+
+                        // Track per-app elapsed seconds
+                        if (pkg.isNotEmpty() && pkg == currentAppPackage) {
+                            currentAppElapsedSeconds++
+                        } else {
+                            currentAppPackage = pkg
+                            currentAppElapsedSeconds = 1L
+                        }
+
+                        // Feature: Show time elapsed using an app on the centre of the screen
+                        val isCenterHUDEnabled = ReelsTrackingManager.isCenterTimerOverlayEnabled(this@ContinuousUsageService)
+                        if (isScreenOn && !overlayManager.isShowing && isCenterHUDEnabled) {
+                            val isExcludedOverlayApp = pkg.isEmpty() ||
+                                pkg == packageName ||
+                                CurrentAppDetector.isSystemUI(pkg) ||
+                                CurrentAppDetector.isLauncherApp(this@ContinuousUsageService, pkg)
+                            if (!isExcludedOverlayApp) {
+                                val reelsCount = ReelsTrackingManager.getTodayCount(this@ContinuousUsageService)
+                                overlayManager.showCenterElapsedHUD(name, currentAppElapsedSeconds, reelsCount)
+                            } else {
+                                overlayManager.hideCenterElapsedHUD()
+                            }
+                        } else {
+                            overlayManager.hideCenterElapsedHUD()
                         }
 
                         val settings = repository.settings.value
@@ -498,7 +531,8 @@ class ContinuousUsageService : Service() {
             isSleepScheduleActive = activeSleepSchedule != null,
             activeSleepScheduleTitle = activeSleepSchedule?.title ?: "",
             emergencySnoozeSecondsRemaining = remainingEmergencySnooze,
-            emergencySnoozedPackage = if (remainingEmergencySnooze > 0) emergencySnoozedPackage else ""
+            emergencySnoozedPackage = if (remainingEmergencySnooze > 0) emergencySnoozedPackage else "",
+            hiddenNotificationCount = SleepNotificationBlockerService.hiddenNotificationsCount.value
         )
     }
 
@@ -598,6 +632,7 @@ class ContinuousUsageService : Service() {
         super.onDestroy()
         tickerJob?.cancel()
         serviceScope.cancel()
+        overlayManager.hideCenterElapsedHUD()
         overlayManager.dismiss()
         try {
             unregisterReceiver(screenReceiver)
